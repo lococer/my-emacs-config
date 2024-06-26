@@ -1,0 +1,10 @@
+
+# compile files
+*.elc
+
+# temp files
+*.~
+
+# auto-save files
+.#*
+

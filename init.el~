@@ -1,0 +1,24 @@
+(defun open-init-file()
+  (interactive)
+  (find-file "~/.emacs.d/init.el"))
+
+(global-set-key (kbd "<f2>") 'open-init-file)
+
+(setq display-line-numbers-type 'relative)
+(global-display-line-numbers-mode 1)
+
+(global-company-mode 1)
+(define-key company-active-map (kbd "C-j" ) 'company-select-next)
+(define-key company-active-map (kbd "C-k" ) 'company-select-previous)
+
+(use-package evil
+    :ensure t
+    :init
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll t)
+    (evil-mode)
+
+    (with-eval-after-load 'evil-maps
+	(define-key evil-motion-state-map (kbd "RET") nil))
+)
+
