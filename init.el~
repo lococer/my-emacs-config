@@ -1,8 +1,18 @@
-(defun open-init-file()
-  (interactive)
-  (find-file "~/.emacs.d/init.el"))
+;;;
+;;; This is lococ's emacs configuration
+;;;
 
-(global-set-key (kbd "<f2>") 'open-init-file)
+;;;
+;;; package part
+
+
+(add-to-list 'package-archives
+	     '("melpa" . "https://melpa.org/packages/") t)
+
+(package-initialize)
+
+(unless package-archive-contents
+  (package-refresh-contents))
 
 (setq display-line-numbers-type 'relative)
 (global-display-line-numbers-mode 1)
@@ -22,3 +32,265 @@
 	(define-key evil-motion-state-map (kbd "RET") nil))
 )
 
+(use-package undo-tree
+  :ensure t
+  :init (global-undo-tree-mode)
+  :custom (undo-tree-auto-save-history nil)
+  :bind(
+	)
+  )
+
+(use-package org
+  :ensure t
+  )
+
+
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory (file-truename "~/org"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
+		 ("C-c n u" . org-roam-ui-mode)
+         ;; Dailies
+         ("C-c n j" . org-roam-dailies-capture-today))
+  :config
+  ;; If you're using a vertical completion framework, you might want a more informative completion interface
+  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (org-roam-db-autosync-mode)
+  ;; If using org-roam-protocol
+  (require 'org-roam-protocol )
+  (require 'org-roam-dailies)
+  )
+
+(use-package org-roam-ui
+  :ensure t
+  :after org-roam
+  :custom
+  (org-roam-ui-sync-theme t)
+  (org-roam-ui-follow t)
+  (org-roam-ui-update-on-save t)
+  )
+
+(use-package vertico
+  :ensure t
+  :config
+  (vertico-mode)
+  (use-package orderless
+	:ensure t
+	:custom
+	(completion-styles '(orderless basic))
+	(completion-category-defaults nil)
+	(completion-category-overrides '((file (styles partial-completion))))
+	)
+  )
+
+(package-install 'orderless)
+(setq completion-styles '(orderless))
+
+(package-install 'key-chord)
+(key-chord-mode 1)
+
+(use-package pyim
+  :ensure t
+  :config
+  (setq default-input-method "pyim")
+  (setq pyim-page-tooltip 'popup)
+  (setq pyim-page-tooltip 'popon)
+  (setq pyim-cloudim 'baidu)
+  (define-key pyim-mode-map "=" 'pyim-page-next-page)
+  (define-key pyim-mode-map "-" 'pyim-page-previous-page)
+  )
+(use-package pyim-basedict
+:ensure t
+:config (pyim-basedict-enable)
+ )
+
+(use-package popup
+  :ensure t
+  )
+(use-package popon
+  :ensure t
+  )
+
+(use-package all-the-icons
+  :ensure t
+  :if(display-graphic-p)
+ )
+
+(use-package powerline
+  :ensure t
+ )
+
+(use-package realgud
+  :ensure t
+  )
+
+(use-package which-key
+  :ensure t
+  :custom
+  (which-key-popup-type 'side-window)
+  :config
+  (which-key-mode)
+  )
+
+(use-package counsel
+  :ensure t
+  )
+  
+(use-package ivy
+ :ensure t
+ :init
+ (ivy-mode 1)
+ ;(counsel-mode 1)
+ :config
+ (setq ivy-use-virtual-buffers t)
+ (setq search-default-mode #'char-fold-to-regexp)
+ (setq ivy-count-format "(%d/%d) ")
+ :bind
+ (("C-s" . 'swiper)
+  ("C-x b" . 'ivy-switch-buffer)
+  ("C-c v" . 'ivy-push-view)
+  ("C-c s" . 'ivy-switch-view)
+  ("C-c V" . 'ivy-pop-view)
+  ("C-x C-@" . 'counsel-mark-ring); 在某些终端上 C-x C-SPC 会被映射为 C-x C-@，比如在 macOS 上，所以要手动设置
+  ("C-x C-SPC" . 'counsel-mark-ring)
+  :map minibuffer-local-map
+  ("C-r" . counsel-minibuffer-history)))
+
+(use-package swiper
+  :bind
+  (("C-s" . swiper)
+   ("C-r" . spiper)
+   ("C-c C-r" . ivy-resume)
+   ("M-x" . counsel-M-x)
+   ("C-x C-f" . counsel-find-file)
+   )
+  :config
+  (progn
+	(ivy-mode 1)
+	(setq ivy-use-virtual-buffers t)
+	(setq ivy-display-style 'fancy)
+	(define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+   )
+  )
+
+(use-package dap-mode
+   :ensure t
+   )
+
+(require 'dap-python)
+(setq dap-python-debugger 'debugpy)
+
+(dap-register-debug-template "My App"
+  (list :type "python"
+        :args "-i"
+        :cwd nil
+        :env '(("DEBUG" . "1"))
+        :target-module (expand-file-name "~/src/myapp/.env/bin/myapp")
+        :request "launch"
+        :name "My App"))
+
+(use-package posframe
+  :ensure t
+  )
+
+(use-package helm
+  :ensure t
+  )
+
+(helm-mode)
+(require 'helm-xref)
+(define-key global-map [remap find-file] #'helm-find-files)
+(define-key global-map [remap execute-extended-command] #'helm-M-x)
+(define-key global-map [remap switch-to-buffer] #'helm-mini)
+
+(which-key-mode)
+(add-hook 'c-mode-hook 'lsp)
+(add-hook 'c++-mode-hook 'lsp)
+
+(setq gc-cons-threshold (* 100 1024 1024)
+      read-process-output-max (* 1024 1024)
+      treemacs-space-between-root-nodes nil
+      company-idle-delay 0.0
+      company-minimum-prefix-length 1
+      lsp-idle-delay 0.1)  ;; clangd is fast
+
+(with-eval-after-load 'lsp-mode
+  (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
+  (require 'dap-cpptools)
+  (yas-global-mode))
+
+;;; package part ends here
+;;;
+
+;;;
+;;; basic configuration
+
+(load-theme 'modus-vivendi)
+
+(electric-pair-mode t)
+(global-auto-revert-mode t)
+
+(setq scroll-step 1)
+(setq scroll-conservatively 10000)
+
+(setq tab-width 4)
+
+
+;; org-todo-keywords
+(setq org-todo-keywords
+      (quote ((sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
+              (sequence "WAITING(w@/!)" "SOMEDAY(S)" "|" "CANCELLED(c@/!)" "MEETING(m)" "PHONE(p)"))))
+
+(tool-bar-mode 1)
+(scroll-bar-mode 0)
+(menu-bar-mode 1)
+
+(show-paren-mode t)
+
+(set-frame-parameter nil 'alpha '(95 . 95))
+(set-cursor-color "DarkOrchid3")
+
+;;; basic configuration ends here
+;;; 
+
+;;;
+;;; key-bindings
+(global-set-key (kbd "<f2>") 'open-init-file)
+(global-set-key (kbd "C-<f2>") 'reload-init-file)
+(global-set-key (kbd "C-SPC") 'toggle-input-method)
+(key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
+(define-key undo-tree-visualizer-mode-map (kbd "RET") 'delete-window)
+(global-set-key (kbd "C-s") 'save-buffer)
+;;; key-bindings ends here
+;;;
+
+;;;
+;;; self-define function
+(defun open-init-file()
+  (interactive)
+  (find-file "~/.emacs.d/init.el"))
+
+(defun reload-init-file()
+  (interactive)
+  (load-file "~/.emacs.d/init.el")
+  )
+;;; self-define function ends here
+;;;
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(helm counsel dap-mode dape vertico undo-tree realgud pyim-basedict pyim powerline popup popon org-roam-ui orderless key-chord evil company all-the-icons)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

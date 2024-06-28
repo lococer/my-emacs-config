@@ -1,0 +1,10 @@
+g++ 1.cpp -o 1.exe
+g++ 1.cpp -o 1
+rm 1.exe
+ls
+exit
+cd ..
+cd cpptest/
+ls
+gdb 1
+exit
