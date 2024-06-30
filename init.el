@@ -215,8 +215,10 @@
 
 (show-paren-mode t)
 
-(set-frame-parameter nil 'alpha '(95 . 95))
+;;(set-frame-parameter nil 'alpha '(80 . 80))
 (set-cursor-color "DarkOrchid3")
+
+(require 'dap-cpptools)
 
 ;;; basic configuration ends here
 ;;; 
@@ -227,7 +229,7 @@
 (global-set-key (kbd "C-<f2>") 'reload-init-file)
 (global-set-key (kbd "C-SPC") 'toggle-input-method)
 (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
-(define-key undo-tree-visualizer-mode-map (kbd "RET") 'delete-window)
+(define-key undo-tree-visualizer-mode-map (kbd "RET") 'undo-tree-visualizer-quit)
 (global-set-key (kbd "C-s") 'save-buffer)
 ;;; key-bindings ends here
 ;;;
@@ -240,14 +242,22 @@
 
 (defun reload-init-file()
   (interactive)
-  (load-file "~/.emacs.d/init.el")
-  )
+  (load-file "~/.emacs.d/init.el"))
 
+;; don't work
 (defun toggle-roam-ui()
 	(interactive)
-	(message (get 'org-roam-ui-mode 'state))
+	(let ((ui-mode (symbol-value 'org-roam-ui-mode)))
+	  (if (eq ui-mode 'nil)
+		  (progn
+			(setq org-roam-ui-mode 't)
+			(message "roam-ui on"))
+		(progn
+		  (setq org-roam-ui-mode 'nil)
+		  (message "roam-ui off"))
+	  )
 	)
-
+)
 ;;; self-define function ends here
 ;;;
 (custom-set-variables
